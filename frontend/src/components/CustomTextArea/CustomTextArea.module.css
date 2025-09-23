@@ -1,0 +1,14 @@
+.textarea {
+    width: 100%;
+    border: 2px solid white;
+    border-radius: 8px;
+    background-color: transparent;
+    color: white;
+    font-size: var(--font-size, 16px); /* valor padrão 16px */
+    padding: 5px;
+    min-height: 100px;
+
+    &:focus {
+        outline: none;
+    }
+}
