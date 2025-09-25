@@ -1,21 +1,22 @@
 import CustomHeader from '../../components/CustomHeader/CustomHeader'
 import styles from './Login.module.css'
-import logo from '../../assets/asana-svgrepo-com.svg'
-import { GoogleLogin, type CredentialResponse } from '@react-oauth/google'
 import AuthService from '../../services/authService'
 import { useSetUser } from '../../store'
 import { AxiosError } from 'axios'
 import { toast, ToastContainer } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
+import CustomGoogleButton from '../../components/GoogleButton/GoogleButton'
+import Logo from '../../components/Logo/Logo'
 
 
 const Login = () => {
     const setUser = useSetUser()
     const redirect = useNavigate()
 
-    const handleSuccess = async (response: CredentialResponse) => {
+    const handleSuccess = async (response: any) => {
         try {
-            const res = await AuthService.login(response.credential!)
+            const res = await AuthService.login(response.access_token!)
+
             sessionStorage.setItem("profile_picture", res.data.profile_picture)
             setUser(res.data)
             redirect('/session/user/tasks/')
@@ -45,14 +46,16 @@ const Login = () => {
                 />
                 <section className={styles.section}>
                     <div className={styles.div}>
-                        <img src={logo} className={styles.logo}/>
-                        <h2 className={styles.h2}>
-                            Bem vindo ao Task Manager!
-                        </h2>
+                        <Logo/>
                     </div>
                     <div className={styles.buttonContainer}>
-                        <GoogleLogin onSuccess={handleSuccess} onError={handleFailure}/>
+                        <hr className={styles.hr}/>
+                        <CustomGoogleButton onSuccess={handleSuccess} onError={handleFailure}/>
+                        <hr className={styles.hr}/>
                     </div>
+                    <span className={styles.span}>
+                        Entre com sua conta do Google
+                    </span>
                 </section>
             </main>
         </>

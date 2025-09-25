@@ -8,6 +8,7 @@
     color: white;
     font-size: var(--font-size, 16px); /* valor padrão 16px */
     padding: 5px;
+    text-align: var(--text-align, 'start');
 
     &:focus {
         outline: none;

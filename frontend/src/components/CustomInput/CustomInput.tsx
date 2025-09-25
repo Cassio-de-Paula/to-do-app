@@ -1,7 +1,7 @@
 import styles from './CustomInput.module.css'
 
 interface CustomInputProps {
-    type: 'text' | 'date'
+    type: 'text' | 'date' | 'color'
     value: string
     onChange: React.ChangeEventHandler<HTMLInputElement>
     onBlur?: () => void
@@ -22,7 +22,7 @@ const CustomInput = ({ type, value, onChange, onBlur, error, fontSize, placeHold
                 onBlur={onBlur}
                 className={error ? styles.inputError : styles.input}
                 placeholder={placeHolder}
-                style={{ "--font-size": fontSize, "text-align": align } as React.CSSProperties}
+                style={{ "--font-size": fontSize, "--text-align": align } as React.CSSProperties}
             />
             {
                 error ? (

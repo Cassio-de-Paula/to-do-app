@@ -11,7 +11,7 @@
 
 .section {
     margin: auto;
-    background-color: rgb(54, 54, 54);
+    background: linear-gradient(to bottom, #3b3b3b, #272A30);
     width: 45%;
     border-radius: 10px;
     padding: 20px;
@@ -19,7 +19,12 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 35px;
+    border: 1px solid white;
+    height: 350px;
+}
+
+.logo {
+  width: 200px;
 }
 
 .div {
@@ -31,6 +36,7 @@
     color: white;
     font-size: 24px;
     font-weight: 600;
+    margin-bottom: 20px;
 }
 
 .h2 {
@@ -49,4 +55,26 @@
 
 .logo:hover {
   transform: rotate(360deg);
+}
+
+.buttonContainer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 8px;
+}
+
+.hr {
+  width: 100%;
+  height: 1px;
+  display: flex;
+  flex-direction: row;
+}
+
+.span {
+  width: 100%;
+  text-align: center;
+  color: white;
+  font-size: 10px;
 }

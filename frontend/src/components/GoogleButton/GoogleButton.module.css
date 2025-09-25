@@ -1,0 +1,19 @@
+.googleButton {
+    padding: 10px;
+    border: 1px solid white;
+    display: flex;
+    background-color: transparent;
+    border-radius: 10px;
+    width: fit-content;
+
+    &:hover {
+        cursor: pointer;
+        transform: scale(1.10);
+        transition: all ease-in-out .3s;
+    }
+}
+
+.logo {
+    width: 40px;
+    height: 40px;
+}

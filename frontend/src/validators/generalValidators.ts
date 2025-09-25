@@ -25,3 +25,12 @@ export function validateUUID(uuid: string): string | null {
 
     return null;
 }
+
+export const validateColor = (input: string) => {
+  // Regex: # seguido de exatamente 6 dígitos hexadecimais
+  const hexColorRegex = /^#([0-9A-Fa-f]{6})$/;
+  
+  if (!hexColorRegex.test(input)) return "Campo inválido"
+
+  return null
+}

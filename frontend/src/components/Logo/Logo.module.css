@@ -1,0 +1,32 @@
+.logoContainer {
+    width: 300px;
+    height: 200px;
+    display: flex;
+}
+
+.absoluteContainer {
+    display: flex;
+    position: absolute;
+}
+
+.logo {
+    width: 200px;
+    height: 200px;
+    position: relative;
+}
+
+.titleContainer {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    top: 60px;
+    left: -70px;
+}
+
+.task, .manager {
+    font-size: 30px;
+}
+
+.manager {
+    margin-left: 20px;
+}

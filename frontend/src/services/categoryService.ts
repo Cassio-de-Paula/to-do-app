@@ -12,6 +12,10 @@ const CategoryService = {
         return api.post('api/categories', params)
     },
 
+    get: async (categoryId: string) => {
+        return api.get(`api/categories/${categoryId}`)
+    },
+
     list: async () => {
         return api.get('api/categories')
     },

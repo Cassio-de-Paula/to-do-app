@@ -1,13 +1,13 @@
 import api from "../config/axiosConfig"
 
 export interface ToDoEventInterface {
-    id?: string
+    id?: string | null
     title: string
     description?: string
     isDone: boolean
     deadline?: string
     userId: string
-    category: string
+    categoryId?: string
 }
 
 const ToDoEventService = {

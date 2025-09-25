@@ -2,8 +2,8 @@ import api from "../config/axiosConfig"
 
 
 const AuthService = {
-    login: async (credential: string) => {
-        return api.post('api/session/auth/', {credential})
+    login: async (accessToken: string) => {
+        return api.post('api/session/auth/', {accessToken})
     },
 
     logout: async () => {

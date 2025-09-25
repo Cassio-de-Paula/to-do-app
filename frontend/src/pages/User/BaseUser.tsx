@@ -36,10 +36,6 @@ const BaseUser = () => {
         if (authenticated === undefined) fetchUser()
     }, [])
 
-    useEffect(() => {
-        console.log(authenticated)
-    }, [authenticated])
-
     if (authenticated === undefined) return (
         <>
             <CustomHeader/>
