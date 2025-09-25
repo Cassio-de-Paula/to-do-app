@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
+
 
 namespace backend.Controllers
 {
@@ -28,45 +28,50 @@ namespace backend.Controllers
         }
 
         // -------------------------
-        // Endpoint de autenticação via Google
+        // Endpoint de autenticação via Google (usando access token)
         // -------------------------
         [HttpPost("auth")]
-        public async Task<IActionResult> GoogleAuth([FromBody] CredentialDto dto)
+        public async Task<IActionResult> GoogleAuth([FromBody] AccessTokenDto dto)
         {
-            if (string.IsNullOrEmpty(dto.Credential))
-                return BadRequest("Credential ausente");
+            if (string.IsNullOrEmpty(dto.AccessToken))
+                return BadRequest("Access token ausente");
 
-            // 1️⃣ Validar JWT do Google
-            var principal = await ValidateGoogleJwt(dto.Credential);
-            if (principal == null) return Unauthorized("Credential inválida");
+            // 1️⃣ Buscar informações do usuário no Google
+            var client = _httpClientFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", dto.AccessToken);
 
-            var email = principal.FindFirstValue(ClaimTypes.Email);
-            var name = principal.FindFirstValue("name");
-            var profilePicture = principal.FindFirstValue("picture");
+            var response = await client.GetAsync("https://www.googleapis.com/oauth2/v2/userinfo");
+            if (!response.IsSuccessStatusCode)
+                return Unauthorized("Access token inválido");
 
-            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(name))
-                return BadRequest("Informações insuficientes na credential");
+            var content = await response.Content.ReadAsStringAsync();
 
-            // 2️⃣ Verificar se usuário já existe
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var userInfo = System.Text.Json.JsonSerializer.Deserialize<GoogleUserInfo>(content);
+
+            if (userInfo == null || string.IsNullOrEmpty(userInfo.Email) || string.IsNullOrEmpty(userInfo.Name))
+                return BadRequest("Informações insuficientes no access token");
+
+            // 2️⃣ Verificar se usuário já existe no banco
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userInfo.Email);
             if (user == null)
             {
                 user = new User
                 {
                     Id = Guid.NewGuid(),
-                    Email = email,
-                    Username = name
+                    Email = userInfo.Email,
+                    Username = userInfo.Name
                 };
 
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
             }
 
-            // 3️⃣ Gerar tokens JWT
-            var accessToken = GenerateJwt(user, minutes: 15);
+            // 3️⃣ Gerar tokens JWT do seu sistema
+            var accessTokenJwt = GenerateJwt(user, minutes: 15);
             var refreshToken = GenerateJwt(user, minutes: 60 * 24 * 7);
 
-            // 4️⃣ Enviar refresh token como cookie HTTP-only
+            // 4️⃣ Enviar refresh token e access token como cookies HTTP-only
             Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
             {
                 HttpOnly = true,
@@ -75,7 +80,7 @@ namespace backend.Controllers
                 Path = "/api/session"
             });
 
-            Response.Cookies.Append("access_token", accessToken, new CookieOptions
+            Response.Cookies.Append("access_token", accessTokenJwt, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = false,
@@ -87,7 +92,7 @@ namespace backend.Controllers
             {
                 id = user.Id,
                 username = user.Username,
-                profile_picture = profilePicture
+                profile_picture = userInfo.Picture
             });
         }
 
@@ -124,10 +129,12 @@ namespace backend.Controllers
             return Ok(new { message = "Token refreshed" });
         }
 
+        // -------------------------
+        // Endpoint de logout
+        // -------------------------
         [HttpPost("logout")]
         public IActionResult Logout()
         {
-            // Remove cookies do frontend
             if (Request.Cookies.ContainsKey("access_token"))
             {
                 Response.Cookies.Delete("access_token", new CookieOptions
@@ -154,7 +161,7 @@ namespace backend.Controllers
         }
 
         // -------------------------
-        // Helpers JWT
+        // Helper: gerar JWT interno
         // -------------------------
         private string GenerateJwt(User user, int minutes)
         {
@@ -181,41 +188,29 @@ namespace backend.Controllers
         }
 
         // -------------------------
-        // Validação segura do JWT do Google
+        // Classe auxiliar para desserializar JSON do Google
         // -------------------------
-        private async Task<ClaimsPrincipal?> ValidateGoogleJwt(string token)
+        private class GoogleUserInfo
         {
-            var client = _httpClientFactory.CreateClient();
-            var jwksResponse = await client.GetStringAsync("https://www.googleapis.com/oauth2/v3/certs");
-            var keys = new JsonWebKeySet(jwksResponse);
+            [JsonPropertyName("id")]
+            public string Id { get; set; } = string.Empty;
 
-            var validationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidIssuer = "https://accounts.google.com",
-                ValidateAudience = true,
-                ValidAudience = _config["Google:ClientId"],
-                ValidateLifetime = true,
-                IssuerSigningKeys = keys.Keys,
-                ClockSkew = TimeSpan.Zero
-            };
+            [JsonPropertyName("email")]
+            public string Email { get; set; } = string.Empty;
 
-            var handler = new JwtSecurityTokenHandler();
-            try
-            {
-                var principal = handler.ValidateToken(token, validationParameters, out var validatedToken);
-                return principal;
-            }
-            catch
-            {
-                return null;
-            }
+            [JsonPropertyName("name")]
+            public string Name { get; set; } = string.Empty;
+
+            [JsonPropertyName("picture")]
+            public string Picture { get; set; } = string.Empty;
         }
     }
 
-    // DTO para receber credential do frontend
-    public class CredentialDto
+    // -------------------------
+    // DTO para receber access token do frontend
+    // -------------------------
+    public class AccessTokenDto
     {
-        public string Credential { get; set; } = string.Empty;
+        public string AccessToken { get; set; } = string.Empty;
     }
 }

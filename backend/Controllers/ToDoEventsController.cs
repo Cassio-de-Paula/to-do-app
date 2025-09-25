@@ -1,13 +1,8 @@
 ﻿using backend.Data;
 using backend.Helpers;
 using backend.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace backend.Controllers
 {
@@ -56,7 +51,7 @@ namespace backend.Controllers
 
         // POST: api/ToDoEvents
         [HttpPost]
-        public async Task<ActionResult<ToDoEvent>> Create(ToDoEvent todo)
+        public async Task<ActionResult<ToDoEvent>> Create([FromBody] ToDoEvent todo)
         {
             var userId = GetUserId();
             if (userId == null) return Unauthorized();
@@ -71,7 +66,7 @@ namespace backend.Controllers
 
         // PUT: api/ToDoEvents/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, ToDoEvent todo)
+        public async Task<IActionResult> Update(Guid id, [FromBody] ToDoEvent todo)
         {
             var userId = GetUserId();
             if (userId == null) return Unauthorized();

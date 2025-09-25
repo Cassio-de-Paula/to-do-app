@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+
 
 namespace backend.Models
 {
@@ -21,6 +21,7 @@ namespace backend.Models
         public User? User { get; set; }
 
         // Lista de tarefas que pertencem a essa categoria
+        [JsonIgnore] // 🚀 evita loop infinito
         public ICollection<ToDoEvent>? ToDoEvents { get; set; }
     }
 }
